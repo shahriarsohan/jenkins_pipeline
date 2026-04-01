@@ -6,12 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Clone') {
-            steps {
-                git 'https://github.com/shahriarsohan/jenkins_pipeline.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'docker build -t $IMAGE ./app'

@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "sohan0077/jenbackend:v1"
+        IMAGE = "sohan0077/jenbackend:v${BUILD_NUMBER}"
     }
 
     stages {
@@ -20,7 +20,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'kubectl apply -f k8s/backend.yaml --validate=false'
+                sh """
+                sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml | kubectl apply -f - --validate=false
+                """
             }
         }
     }

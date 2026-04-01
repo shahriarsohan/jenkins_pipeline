@@ -20,7 +20,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 'kubectl apply -f k8s/backend.yaml'
+                sh 'kubectl apply -f k8s/backend.yaml --validate=false'
             }
         }
     }

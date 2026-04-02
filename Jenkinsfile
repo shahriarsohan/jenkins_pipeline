@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE = "sohan0077/jenbackend:v${BUILD_NUMBER}"
+        APP = "jenkins-proj-101-backend"
     }
 
     options {
@@ -27,8 +28,16 @@ pipeline {
             steps {
                 sh """
                 export KUBECONFIG=/home/sohan/.kube/config
-                sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml > k8s/deployment-${BUILD_NUMBER}.yaml
-                kubectl apply -f k8s/deployment-${BUILD_NUMBER}.yaml --validate=false
+                sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
+                kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml --validate=false
+                """
+            }
+        }
+        stage('Verify') {
+            steps {
+                sh """
+                export KUBECONFIG=/home/sohan/.kube/kubeadm-config.yaml
+                kubectl rollout status deployment/$APP
                 """
             }
         }

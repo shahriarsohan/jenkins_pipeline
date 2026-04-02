@@ -27,7 +27,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                export KUBECONFIG=/home/sohan/.kube/kubeadm-config.yaml
+                export KUBECONFIG=/home/sohan/.kube/kubeadm-config
                 sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
                 kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml --validate=false
                 """
@@ -36,7 +36,7 @@ pipeline {
         stage('Verify') {
             steps {
                 sh """
-                export KUBECONFIG=/home/sohan/.kube/kubeadm-config.yaml
+                export KUBECONFIG=/home/sohan/.kube/kubeadm-config
                 kubectl rollout status deployment/$APP
                 """
             }

@@ -5,6 +5,11 @@ pipeline {
         IMAGE = "sohan0077/jenbackend:v${BUILD_NUMBER}"
     }
 
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 10, unit: 'MINUTES')
+    }
+
     stages {
         stage('Build') {
             steps {

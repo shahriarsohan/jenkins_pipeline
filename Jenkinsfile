@@ -27,7 +27,8 @@ pipeline {
             steps {
                 sh """
                 export KUBECONFIG=/home/sohan/.kube/config
-                sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml | kubectl apply -f - --validate=false
+                sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml > k8s/deployment-${BUILD_NUMBER}.yaml
+                kubectl apply -f k8s/deployment-${BUILD_NUMBER}.yaml --validate=false
                 """
             }
         }

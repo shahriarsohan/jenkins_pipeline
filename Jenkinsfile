@@ -42,4 +42,23 @@ pipeline {
             }
         }
     }
+
+    post {
+        success {
+            echo "✅ Deployment successful"
+        }
+
+        failure {
+            echo "❌ Deployment failed, rolling back..."
+            sh """
+            export KUBECONFIG=/home/sohan/.kube/kubeadm-config
+            kubectl rollout undo deployment/$APP
+            """
+        }
+
+        always {
+            echo "🧹 Cleaning up Docker..."
+            sh "docker image prune -af"
+        }
+    }
 }

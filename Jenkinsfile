@@ -21,6 +21,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
+                export KUBECONFIG=/home/sohan/.kube/config
                 sed 's|image:.*|image: $IMAGE|' k8s/backend.yaml | kubectl apply -f - --validate=false
                 """
             }

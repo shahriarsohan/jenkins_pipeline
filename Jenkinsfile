@@ -5,6 +5,7 @@ pipeline {
         IMAGE = "sohan0077/jenbackend:${env.GIT_COMMIT.take(7)}"
         APP = "jenkins-proj-101-backend"
         KUBE_NAMESPACE = "default"
+        S3_BUCKET = "jenkins-proj-101-backend"
     }
 
     options {

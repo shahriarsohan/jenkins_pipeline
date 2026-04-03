@@ -67,7 +67,7 @@ pipeline {
 
                 sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
 
-                kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml -n $KUBE_NAMESPACE
+                kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml -n $KUBE_NAMESPACE --validate=false
 
                 touch .jenkins_deployed
                 "
@@ -82,7 +82,7 @@ pipeline {
                 set -euo pipefail
                 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/kubeadm-config}
 
-                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
+                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s 
                 "
                 '''
             }

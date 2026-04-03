@@ -13,12 +13,17 @@ pipeline {
     }
 
     stages {
-
-        stage('Initialize') {
+        stage('Clean') {
             steps {
-                sh 'rm -f .jenkins_deployed'
+                deleteDir()
             }
         }
+
+        // stage('Initialize') { ## Dont need this stage as we are using deleteDir()
+        //     steps {
+        //         sh 'rm -f .jenkins_deployed'
+        //     }
+        // }
 
         stage('Test') {
             steps {

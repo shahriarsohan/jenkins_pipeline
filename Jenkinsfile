@@ -105,6 +105,7 @@ pipeline {
 
         success {
             echo "✅ Deployment successful"
+            archiveArtifacts artifacts: 'k8s/backend-*.yaml', fingerprint: true
         }
 
         failure {

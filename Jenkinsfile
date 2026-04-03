@@ -22,6 +22,7 @@ pipeline {
             steps {
                 dir('app') {
                     sh '''
+                        #!/bin/bash
                         set -euo pipefail
                         python3 -m venv .venv
                         source .venv/bin/activate
@@ -35,6 +36,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
+                    #!/bin/bash
                     set -euo pipefail
                     docker build -t "$IMAGE" ./app
                 '''
@@ -44,6 +46,7 @@ pipeline {
         stage('Push') {
             steps {
                 sh '''
+                    #!/bin/bash
                     set -euo pipefail
                     docker push "$IMAGE"
                 '''
@@ -53,6 +56,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    #!/bin/bash
                     set -euo pipefail
                     export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
                     sed "s|image: sohan0077/jenbackend:.*|image: $IMAGE|" k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
@@ -65,6 +69,7 @@ pipeline {
         stage('Verify') {
             steps {
                 sh '''
+                    #!/bin/bash
                     set -euo pipefail
                     export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
                     kubectl rollout status deployment/$APP --timeout=120s
@@ -82,6 +87,7 @@ pipeline {
             script {
                 if (fileExists('.jenkins_deployed')) {
                     sh '''
+                        #!/bin/bash
                         set -euo pipefail
                         export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
                         kubectl rollout undo deployment/$APP
@@ -92,6 +98,7 @@ pipeline {
 
         always {
             sh '''
+                #!/bin/bash
                 set -euo pipefail
                 docker rmi "$IMAGE" 2>/dev/null || true
                 rm -f k8s/backend-${BUILD_NUMBER}.yaml

@@ -124,22 +124,27 @@ pipeline {
         }
 
     always {
-        sh '''
-        bash -c "
-        set -euo pipefail
+        withCredentials([
+        string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
+        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+    ]) {
+            sh '''
+            bash -c "
+            set -euo pipefail
 
-        if [ -f k8s/backend-${BUILD_NUMBER}.yaml ]; then
-            aws s3 cp k8s/backend-${BUILD_NUMBER}.yaml s3://$S3_BUCKET/build-${BUILD_NUMBER}/
-        fi
+            if [ -f k8s/backend-${BUILD_NUMBER}.yaml ]; then
+                aws s3 cp k8s/backend-${BUILD_NUMBER}.yaml s3://$S3_BUCKET/build-${BUILD_NUMBER}/
+            fi
 
-        aws s3 cp $WORKSPACE s3://$S3_BUCKET/build-${BUILD_NUMBER}/workspace/ --recursive --exclude '.git/*'
+            aws s3 cp $WORKSPACE s3://$S3_BUCKET/build-${BUILD_NUMBER}/workspace/ --recursive --exclude '.git/*'
 
-        docker rmi $IMAGE 2>/dev/null || true
-        rm -f k8s/backend-${BUILD_NUMBER}.yaml
-        rm -f .jenkins_deployed
-        rm -rf app/.venv
-        "
-        '''
-    }
+            docker rmi $IMAGE 2>/dev/null || true
+            rm -f k8s/backend-${BUILD_NUMBER}.yaml
+            rm -f .jenkins_deployed
+            rm -rf app/.venv
+            "
+            '''
+            }
+        }
     }
 }

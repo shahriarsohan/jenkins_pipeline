@@ -125,10 +125,10 @@ pipeline {
 
     always {
         withCredentials([
-        string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
-        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
-        string(credentialsId: 'JENKINS_USER', variable: 'JENKINS_USER'),
-        string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
+            string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+            string(credentialsId: 'JENKINS_USER', variable: 'JENKINS_USER'),
+            string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
     ]) {
             sh '''
             bash -c "

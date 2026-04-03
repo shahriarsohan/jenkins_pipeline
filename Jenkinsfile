@@ -122,17 +122,23 @@ pipeline {
             }
         }
 
-        always {
-            sh '''
-            bash -c "
-            set -euo pipefail
+    always {
+        sh '''
+        bash -c "
+        set -euo pipefail
 
-            docker rmi $IMAGE 2>/dev/null || true
-            rm -f k8s/backend-${BUILD_NUMBER}.yaml
-            rm -f .jenkins_deployed
-            rm -rf app/.venv
-            "
-            '''
-        }
+        if [ -f k8s/backend-${BUILD_NUMBER}.yaml ]; then
+            aws s3 cp k8s/backend-${BUILD_NUMBER}.yaml s3://$S3_BUCKET/build-${BUILD_NUMBER}/
+        fi
+
+        aws s3 cp $WORKSPACE s3://$S3_BUCKET/build-${BUILD_NUMBER}/workspace/ --recursive --exclude '.git/*'
+
+        docker rmi $IMAGE 2>/dev/null || true
+        rm -f k8s/backend-${BUILD_NUMBER}.yaml
+        rm -f .jenkins_deployed
+        rm -rf app/.venv
+        "
+        '''
+    }
     }
 }

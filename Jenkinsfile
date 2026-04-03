@@ -63,7 +63,7 @@ pipeline {
                 sh '''
                 bash -c "
                 set -euo pipefail
-                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
+                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/kubeadm-config}
 
                 sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
 
@@ -80,7 +80,7 @@ pipeline {
                 sh '''
                 bash -c "
                 set -euo pipefail
-                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
+                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/kubeadm-config}
 
                 kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
                 "
@@ -101,7 +101,7 @@ pipeline {
                     sh '''
                     bash -c "
                     set -euo pipefail
-                    export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
+                    export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/kubeadm-config}
 
                     kubectl rollout undo deployment/$APP -n $KUBE_NAMESPACE
                     kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE

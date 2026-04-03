@@ -105,7 +105,6 @@ pipeline {
 
         success {
             echo "✅ Deployment successful"
-            archiveArtifacts artifacts: 'k8s/backend-*.yaml', fingerprint: true
         }
 
         failure {
@@ -125,6 +124,7 @@ pipeline {
         }
 
     always {
+        archiveArtifacts artifacts: "k8s/backend-${BUILD_NUMBER}.yaml", fingerprint: true, allowEmptyArchive: true
         withCredentials([
             string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
             string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),

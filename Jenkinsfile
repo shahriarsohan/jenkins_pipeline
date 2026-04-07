@@ -77,9 +77,10 @@ pipeline {
                 set -euo pipefail
                 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-                sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
+                sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend.yaml.tmp
+                mv k8s/backend.yaml.tmp k8s/backend.yaml
 
-                kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml -n $KUBE_NAMESPACE --validate=false
+                kubectl apply -f k8s/backend.yaml -n $KUBE_NAMESPACE --validate=false
 
                 touch .jenkins_deployed
                 "

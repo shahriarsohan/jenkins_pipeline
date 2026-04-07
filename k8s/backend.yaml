@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: jenkins-proj-101-backend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: jenkins-proj-101-backend
@@ -13,11 +13,23 @@ spec:
       labels:
         app: jenkins-proj-101-backend
     spec:
+      initContainers:
+        - name: init-service
+          image: busybox
+          command: ['sh', '-c' , 'echo waiting... && sleep 15']
+
       containers:
         - name: jenkins-proj-101-backend
-          image: sohan0077/jenbackend:v1
+          image: sohan0077/jenbackend:6642f8f
           ports:
             - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m" ## REQUIRED FOR HPA
+            limits:
+              cpu: "200m"
+
+        
 
 ---
 
@@ -33,3 +45,25 @@ spec:
       port: 8000
       targetPort: 8000
   type: NodePort
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hqa-demo
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jenkins-proj-101-backend
+  
+  minReplicas: 2
+  maxReplicas: 10
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend-server
+  labels:
+    app: server
+spec:
+  containers:
+    - name: backend-server
+      image: sohan0077/jenbackend:6642f8f
+      ports:
+        - containerPort: 80

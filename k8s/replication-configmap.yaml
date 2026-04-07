@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+data:
+  init.sh: |
+    #!/bin/bash
+    set -e
+
+    HOSTNAME=$(hostname)
+
+    if [[ "$HOSTNAME" == "postgres-0" ]]; then
+      echo "I am PRIMARY"
+
+      # Start postgres in background
+      docker-entrypoint.sh postgres &
+
+      # Wait until postgres is ready
+      until pg_isready; do
+        echo "Waiting for postgres..."
+        sleep 2
+      done
+
+      echo "Configuring primary for replication..."
+
+      # Allow replication + connections
+      echo "host replication all 0.0.0.0/0 trust" >> /var/lib/postgresql/data/pg_hba.conf
+      echo "host all all 0.0.0.0/0 trust" >> /var/lib/postgresql/data/pg_hba.conf
+
+      # Enable replication settings
+      echo "wal_level = replica" >> /var/lib/postgresql/data/postgresql.conf
+      echo "max_wal_senders = 10" >> /var/lib/postgresql/data/postgresql.conf
+      echo "hot_standby = on" >> /var/lib/postgresql/data/postgresql.conf
+
+      # Reload config
+      pg_ctl reload
+
+      echo "Primary ready"
+
+      wait
+
+    else
+      echo "I am REPLICA"
+
+      # Wait for primary to be fully ready (not just pg_isready)
+      until PGPASSWORD=secret psql -h postgres-0.postgres -U postgres -c "SELECT 1" >/dev/null 2>&1; do
+        echo "Waiting for primary to be fully ready..."
+        sleep 2
+      done
+
+      echo "Primary is ready, starting base backup..."
+
+      # Clean old data
+      rm -rf /var/lib/postgresql/data/*
+
+      # Retry basebackup until success
+      until PGPASSWORD=secret pg_basebackup \
+        -h postgres-0.postgres \
+        -D /var/lib/postgresql/data \
+        -U postgres \
+        -Fp -Xs -P -R; do
+        echo "Retrying base backup..."
+        sleep 2
+      done
+
+      echo "Replica setup complete, starting postgres..."
+
+      exec docker-entrypoint.sh postgres

@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: jenkins-proj-101-backend
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: jenkins-proj-101-backend
@@ -20,7 +20,7 @@ spec:
 
       containers:
         - name: jenkins-proj-101-backend
-          image: sohan0077/jenbackend:6642f8f
+          image: sohan0077/jenbackend:e6400f0
           ports:
             - containerPort: 8000
           resources:
@@ -28,8 +28,6 @@ spec:
               cpu: "100m" ## REQUIRED FOR HPA
             limits:
               cpu: "200m"
-
-        
 
 ---
 
@@ -57,7 +55,7 @@ spec:
     kind: Deployment
     name: jenkins-proj-101-backend
   
-  minReplicas: 2
+  minReplicas: 4
   maxReplicas: 10
 
   metrics:

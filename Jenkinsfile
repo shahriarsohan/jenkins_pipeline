@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "sohan0077/jenbackend:${env.GIT_COMMIT.take(7)}"
+        IMAGE = "sohan0077/jenbackend:${env.GIT_COMMIT.take(7)}-${BUILD_NUMBER}"
         APP = "jenkins-proj-101-backend"
         KUBE_NAMESPACE = "default"
         S3_BUCKET = "jenkins-proj-101-backend"
@@ -14,17 +14,12 @@ pipeline {
     }
 
     stages {
+
         stage('Clean') {
             steps {
                 deleteDir()
             }
         }
-
-        // stage('Initialize') { ## Dont need this stage as we are using deleteDir()
-        //     steps {
-        //         sh 'rm -f .jenkins_deployed'
-        //     }
-        // }
 
         stage('Checkout') {
             steps {
@@ -53,7 +48,7 @@ pipeline {
                 sh '''
                 bash -c "
                 set -euo pipefail
-                docker build -t $IMAGE ./app
+                docker build --no-cache -t $IMAGE ./app
                 "
                 '''
             }
@@ -77,10 +72,11 @@ pipeline {
                 set -euo pipefail
                 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-                sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend.yaml.tmp
-                mv k8s/backend.yaml.tmp k8s/backend.yaml
+                kubectl set image deployment/$APP \
+                  $APP=$IMAGE \
+                  -n $KUBE_NAMESPACE
 
-                kubectl apply -f k8s/backend.yaml -n $KUBE_NAMESPACE --validate=false
+                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
 
                 touch .jenkins_deployed
                 "
@@ -95,7 +91,7 @@ pipeline {
                 set -euo pipefail
                 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s 
+                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
                 "
                 '''
             }
@@ -124,34 +120,35 @@ pipeline {
             }
         }
 
-    always {
-        archiveArtifacts artifacts: "k8s/backend-${BUILD_NUMBER}.yaml", fingerprint: true, allowEmptyArchive: true
-        withCredentials([
-            string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
-            string(credentialsId: 'JENKINS_USER', variable: 'JENKINS_USER'),
-            string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
-    ]) {
-            sh '''
-            bash -c "
-            set -euo pipefail
+        always {
+            archiveArtifacts artifacts: "k8s/backend-${BUILD_NUMBER}.yaml", fingerprint: true, allowEmptyArchive: true
 
-            if [ -f k8s/backend-${BUILD_NUMBER}.yaml ]; then
-                aws s3 cp k8s/backend-${BUILD_NUMBER}.yaml s3://$S3_BUCKET/build-${BUILD_NUMBER}/
-            fi
+            withCredentials([
+                string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
+                string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+                string(credentialsId: 'JENKINS_USER', variable: 'JENKINS_USER'),
+                string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')
+            ]) {
+                sh '''
+                bash -c "
+                set -euo pipefail
 
-            aws s3 cp $WORKSPACE s3://$S3_BUCKET/build-${BUILD_NUMBER}/workspace/ --recursive --exclude '.git/*' --exclude '*/.venv/*'
+                if [ -f k8s/backend-${BUILD_NUMBER}.yaml ]; then
+                    aws s3 cp k8s/backend-${BUILD_NUMBER}.yaml s3://$S3_BUCKET/build-${BUILD_NUMBER}/
+                fi
 
-            ## Upoading build logs
-            curl -u ${JENKINS_USER}:${JENKINS_API_TOKEN} ${BUILD_URL}consoleText -o build-${BUILD_NUMBER}.log
-            aws s3 cp build-${BUILD_NUMBER}.log s3://${S3_BUCKET}/build-${BUILD_NUMBER}/
+                aws s3 cp $WORKSPACE s3://$S3_BUCKET/build-${BUILD_NUMBER}/workspace/ --recursive \
+                    --exclude '.git/*' --exclude '*/.venv/*'
 
-            docker rmi $IMAGE 2>/dev/null || true
-            rm -f k8s/backend-${BUILD_NUMBER}.yaml
-            rm -f .jenkins_deployed
-            rm -rf app/.venv
-            "
-            '''
+                curl -u ${JENKINS_USER}:${JENKINS_API_TOKEN} ${BUILD_URL}consoleText -o build-${BUILD_NUMBER}.log
+                aws s3 cp build-${BUILD_NUMBER}.log s3://${S3_BUCKET}/build-${BUILD_NUMBER}/
+
+                docker rmi $IMAGE 2>/dev/null || true
+                rm -f k8s/backend-${BUILD_NUMBER}.yaml
+                rm -f .jenkins_deployed
+                rm -rf app/.venv
+                "
+                '''
             }
         }
     }

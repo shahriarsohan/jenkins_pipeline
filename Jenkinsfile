@@ -17,8 +17,9 @@ pipeline {
         stage('Prepare') {
             steps {
                 script {
-                    COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    IMAGE = "sohan0077/jenbackend:${COMMIT}-${BUILD_NUMBER}"
+                    def COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.IMAGE = "sohan0077/jenbackend:${COMMIT}-${BUILD_NUMBER}"
+                    echo "Using image: ${env.IMAGE}"
                 }
             }
         }

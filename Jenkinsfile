@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "sohan0077/jenbackend:${env.GIT_COMMIT.take(7)}-${BUILD_NUMBER}"
         APP = "jenkins-proj-101-backend"
         KUBE_NAMESPACE = "default"
         S3_BUCKET = "jenkins-proj-101-backend"
@@ -14,6 +13,15 @@ pipeline {
     }
 
     stages {
+
+        stage('Prepare') {
+            steps {
+                script {
+                    COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    IMAGE = "sohan0077/jenbackend:${COMMIT}-${BUILD_NUMBER}"
+                }
+            }
+        }
 
         stage('Clean') {
             steps {

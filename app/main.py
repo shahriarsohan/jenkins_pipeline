@@ -5,7 +5,7 @@ app = FastAPI()
 
 @app.get("/")
 def health_check():
-    return {"status": "healthy v8"}
+    return {"status": "healthy v9"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -69,16 +69,18 @@ pipeline {
             steps {
                 sh '''
                 bash -c "
-                set -euo pipefail
-                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
+                    set -euo pipefail
+                    export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-                kubectl set image deployment/$APP \
-                  $APP=$IMAGE \
-                  -n $KUBE_NAMESPACE
+                    kubectl set image deployment/$APP \
+                    $APP=$IMAGE \
+                    -n $KUBE_NAMESPACE
 
-                kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
+                    kubectl rollout restart deployment/$APP -n $KUBE_NAMESPACE
 
-                touch .jenkins_deployed
+                    kubectl rollout status deployment/$APP -n $KUBE_NAMESPACE --timeout=120s
+
+                    touch .jenkins_deployed
                 "
                 '''
             }

@@ -20,7 +20,7 @@ spec:
 
       containers:
         - name: jenkins-proj-101-backend
-          image: sohan0077/jenbackend:e6400f0
+          image: sohan0077/jenbackend:6da2f15
           ports:
             - containerPort: 8000
           resources:
@@ -43,25 +43,3 @@ spec:
       port: 8000
       targetPort: 8000
   type: NodePort
-
----
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: hqa-demo
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: jenkins-proj-101-backend
-  
-  minReplicas: 4
-  maxReplicas: 10
-
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 50

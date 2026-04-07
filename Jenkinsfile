@@ -14,9 +14,38 @@ pipeline {
 
     stages {
 
+        stage('Debug K8s Context') {
+            steps {
+                sh '''
+                bash -c "
+                set -euo pipefail
+
+                export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
+
+                echo '=== CURRENT CONTEXT ==='
+                kubectl config current-context
+
+                echo '=== CLUSTER INFO ==='
+                kubectl cluster-info
+
+                echo '=== NODES ==='
+                kubectl get nodes -o wide
+
+                echo '=== DEPLOYMENTS ==='
+                kubectl get deployments -n default
+
+                echo '=== PODS ==='
+                kubectl get pods -n default
+                "
+                '''
+            }
+        }
+
         stage('Prepare') {
             steps {
                 script {
+                    echo "Building commit: ${env.GIT_COMMIT}"
+                    
                     def COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     env.IMAGE = "sohan0077/jenbackend:${COMMIT}-${BUILD_NUMBER}"
                     echo "Using image: ${env.IMAGE}"

@@ -77,7 +77,7 @@ pipeline {
                 set -euo pipefail
                 export KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
-                sed \"s|image: sohan0077/jenbackend:.*|image: $IMAGE|\" k8s/manifests/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
+                sed 's|image: sohan0077/jenbackend:.*|image: '"$IMAGE"'|' k8s/backend.yaml > k8s/backend-${BUILD_NUMBER}.yaml
 
                 kubectl apply -f k8s/backend-${BUILD_NUMBER}.yaml -n $KUBE_NAMESPACE --validate=false
 

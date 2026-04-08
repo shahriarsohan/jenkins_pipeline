@@ -1,0 +1,4 @@
+replicaCount: 2
+appName: mywebapp
+image: devopsjourney1/mywebapp
+tag: latest

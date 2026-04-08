@@ -1,0 +1,24 @@
+replicaCount: 2
+
+image:
+  repository: sohan0077/jenbackend
+  tag: 3bf45ce
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: app.local
+  path: /
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
